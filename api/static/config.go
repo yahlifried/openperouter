@@ -6,10 +6,15 @@ import (
 	"github.com/openperouter/openperouter/api/v1alpha1"
 )
 
+type NodeIndex struct {
+	Index         int    `json:"index"`
+	InterfaceName string `json:"interfaceName"`
+}
+
 type NodeConfig struct {
-	NodeIndex int    `json:"nodeIndex"`
-	NodeName  string `json:"nodeName"`
-	LogLevel  string `json:"logLevel"`
+	NodeIndex NodeIndex `json:"nodeIndex"`
+	NodeName  string    `json:"nodeName"`
+	LogLevel  string    `json:"logLevel"`
 }
 
 type PERouterConfig struct {

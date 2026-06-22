@@ -24,18 +24,23 @@ func TestReadNodeConfig(t *testing.T) {
 	}{
 		{
 			name:     "valid yaml config",
-			content:  "nodeIndex: 42\nlogLevel: debug\n",
-			expected: &static.NodeConfig{NodeIndex: 42, LogLevel: "debug"},
+			content:  "nodeIndex:\n  index: 42\nlogLevel: debug\n",
+			expected: &static.NodeConfig{NodeIndex: static.NodeIndex{Index: 42}, LogLevel: "debug"},
 		},
 		{
 			name:     "valid yaml with zero value",
-			content:  "nodeIndex: 0\nlogLevel: info\n",
-			expected: &static.NodeConfig{NodeIndex: 0, LogLevel: "info"},
+			content:  "nodeIndex:\n  index: 0\nlogLevel: info\n",
+			expected: &static.NodeConfig{NodeIndex: static.NodeIndex{Index: 0}, LogLevel: "info"},
 		},
 		{
 			name:     "valid yaml with only nodeIndex",
-			content:  "nodeIndex: 1\n",
-			expected: &static.NodeConfig{NodeIndex: 1, LogLevel: ""},
+			content:  "nodeIndex:\n  index: 1\n",
+			expected: &static.NodeConfig{NodeIndex: static.NodeIndex{Index: 1}, LogLevel: ""},
+		},
+		{
+			name:     "valid yaml with interfaceName",
+			content:  "nodeIndex:\n  interfaceName: eth0\n",
+			expected: &static.NodeConfig{NodeIndex: static.NodeIndex{InterfaceName: "eth0"}},
 		},
 		{
 			name:        "invalid yaml",
@@ -67,7 +72,7 @@ func TestReadNodeConfig(t *testing.T) {
 			}
 
 			if config.NodeIndex != tt.expected.NodeIndex {
-				t.Errorf("expected NodeIndex %d, got %d", tt.expected.NodeIndex, config.NodeIndex)
+				t.Errorf("expected NodeIndex %+v, got %+v", tt.expected.NodeIndex, config.NodeIndex)
 			}
 
 			if config.LogLevel != tt.expected.LogLevel {
