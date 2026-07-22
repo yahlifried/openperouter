@@ -222,7 +222,7 @@ func TestReadRouterConfigsFromFiles(t *testing.T) {
 		t.Fatalf("expected %d config files, got %d", expectedConfigFiles, len(configs))
 	}
 
-	underlays := make([]v1alpha1.UnderlaySpec, 0, len(configs))
+	underlays := make([]static.StaticUnderlaySpec, 0, len(configs))
 	l3vnis := make([]static.StaticL3VNI, 0, len(configs))
 	l3vpns := make([]static.StaticL3VPN, 0, len(configs))
 	l2vnis := make([]static.StaticL2VNI, 0, len(configs))
@@ -239,26 +239,32 @@ func TestReadRouterConfigsFromFiles(t *testing.T) {
 	}
 
 	// openpe_underlay.yaml
-	wantUnderlay := v1alpha1.UnderlaySpec{
-		ASN:        64514,
-		Interfaces: []v1alpha1.UnderlayInterface{{Type: "NetworkDevice", NetworkDevice: &v1alpha1.NetworkDevice{InterfaceName: "toswitch1"}}, {Type: "NetworkDevice", NetworkDevice: &v1alpha1.NetworkDevice{InterfaceName: "eth0"}}},
-		Neighbors: []v1alpha1.Neighbor{
-			{
-				ASN:     new(int64(64512)),
-				Address: new("192.168.11.2"),
-			},
-			{
-				ASN:     new(int64(64512)),
-				Address: new("192.168.11.3"),
-				BFD: &v1alpha1.BFDSettings{
-					ReceiveInterval:  new(int32(300)),
-					TransmitInterval: new(int32(300)),
-					DetectMultiplier: new(int32(3)),
-				},
+	wantUnderlay := static.StaticUnderlaySpec{
+		UnderlaySpec: v1alpha1.UnderlaySpec{
+			ASN:        64514,
+			Interfaces: []v1alpha1.UnderlayInterface{{Type: "NetworkDevice", NetworkDevice: &v1alpha1.NetworkDevice{InterfaceName: "toswitch1"}}, {Type: "NetworkDevice", NetworkDevice: &v1alpha1.NetworkDevice{InterfaceName: "eth0"}}},
+			TunnelEndpoint: &v1alpha1.TunnelEndpointConfig{
+				CIDRs: []string{"100.65.0.0/24"},
 			},
 		},
-		TunnelEndpoint: &v1alpha1.TunnelEndpointConfig{
-			CIDRs: []string{"100.65.0.0/24"},
+		Neighbors: []static.StaticNeighbor{
+			{
+				Neighbor: v1alpha1.Neighbor{
+					ASN:     new(int64(64512)),
+					Address: new("192.168.11.2"),
+				},
+			},
+			{
+				Neighbor: v1alpha1.Neighbor{
+					ASN:     new(int64(64512)),
+					Address: new("192.168.11.3"),
+					BFD: &v1alpha1.BFDSettings{
+						ReceiveInterval:  new(int32(300)),
+						TransmitInterval: new(int32(300)),
+						DetectMultiplier: new(int32(3)),
+					},
+				},
+			},
 		},
 	}
 
@@ -386,7 +392,7 @@ func TestReadRouterConfigsFromFiles(t *testing.T) {
 		},
 	}
 
-	sortNeighbors := cmpopts.SortSlices(func(a, b v1alpha1.Neighbor) bool {
+	sortNeighbors := cmpopts.SortSlices(func(a, b static.StaticNeighbor) bool {
 		return ptr.Deref(a.Address, "") < ptr.Deref(b.Address, "")
 	})
 	sortL3VNIs := cmpopts.SortSlices(func(a, b static.StaticL3VNI) bool {
